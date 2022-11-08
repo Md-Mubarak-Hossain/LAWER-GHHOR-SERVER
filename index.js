@@ -1,7 +1,7 @@
 const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
-// const blog = require('./blog.json');
+// const services = require('./services.json');
 const app = express()
 const port = process.env.PORT || 5000;
 require('dotenv').config();
@@ -28,7 +28,7 @@ async function run() {
         const blogCollection = database.collection('blog')
 
         // data create and send
-        app.post('/services', async (req, res) => {
+        app.post('/service', async (req, res) => {
             // const user = req.body;
             const user = {
                 name: "Rashed",
@@ -39,12 +39,19 @@ async function run() {
             console.log(result);
         })
 
-        // data read and view
+        //services all data read and view
         app.get('/services', async (req, res) => {
             const query = {}
             const cursor = collectionServer.find(query)
-            const users = await cursor.toArray();
-            res.send(users);
+            const services = await cursor.toArray();
+            res.send(services);
+        })
+        // limit 3 data read and view
+        app.get('/service', async (req, res) => {
+            const query = {}
+            const cursor = collectionServer.find(query)
+            const service = await cursor.limit(3).toArray();
+            res.send(service);
         })
         // blog data read
         app.get('/blog', async (req, res) => {
@@ -102,8 +109,8 @@ async function run() {
 run().catch(err => console.error(err))
 
 // data read test
-// app.get('/blog', (req, res) => {
-// res.send(blog);
+// app.get('/services', (req, res) => {
+//     res.send(services);
 // })
 app.get('/', (req, res) => {
     res.send('server-mongo-connect running')
