@@ -21,24 +21,81 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
-        // database and collection create
-        const database = client.db('lawyerServer')
-        const collectionServer = database.collection('services')
-        const faqCollection = database.collection('faq')
-        const blogCollection = database.collection('blog')
 
-        // data create and send
-        app.post('/service', async (req, res) => {
-            // const user = req.body;
-            const user = {
-                name: "Rashed",
-                email: 'rashed@gmail.com'
-            };
-            const result = await collectionServer.insertOne(user);
+        // database and collection create
+        const database = client.db('lawyerServer');
+        const collectionServer = database.collection('services');
+        const faqCollection = database.collection('faq');
+        const blogCollection = database.collection('blog');
+        const myreviewsCollection = database.collection('myreviews');
+
+        /*...........................
+
+        My reviewer data CRUD start
+        
+        ............................*/
+
+        //myreviewers data create and send
+
+        app.post('/myreviews', async (req, res) => {
+            const myreviewer = req.body;
+            const result = await myreviewsCollection.insertOne(myreviewer);
             res.send(result);
             console.log(result);
         })
 
+        // myreviews all data view by email
+
+        app.get('/myreviews', async (req, res) => {
+            const query = {}
+            const cursor = myreviewsCollection.find(query)
+            const myreviews = await cursor.toArray();
+            res.send(myreviews);
+        });
+        // myreviews single  data view by id ......
+        app.get('/myreviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const myreviews = await collectionServer.findOne(query)
+            res.send(myreviews);
+        });
+
+        // myreviews  data update
+
+        app.put('/myreviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const myreview = req.body;
+            const option = { upsert: true }
+            const updatemyreview = {
+                $set: {
+                    serviceName: myreview.serviceName,
+                    servicePrice: myreview.servicePrice,
+                    img: myreview.img
+                }
+            }
+            const result = await myreviewsCollection.updateOne(filter, updateUser, option)
+            res.send(result)
+        })
+
+        //myreviews data delete 
+        app.delete('/myreviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await myreviewsCollection.deleteOne(query)
+            res.send(result)
+        })
+        /*...........................
+       
+               My reviewer data CRUD end
+               
+        ............................*/
+
+        /*....................
+
+        My services data CRUD start
+        
+        ..........................*/
         //services all data read and view
         app.get('/services', async (req, res) => {
             const query = {}
@@ -53,23 +110,16 @@ async function run() {
             const service = await cursor.limit(3).toArray();
             res.send(service);
         })
-        // blog data read
-        app.get('/blog', async (req, res) => {
-            const query = {}
-            const cursor = blogCollection.find(query)
-            const blog = await cursor.toArray();
-            res.send(blog);
-        })
-        // faq data read
-        app.get('/faq', async (req, res) => {
-            const query = {}
-            const cursor = faqCollection.find(query)
-            const faq = await cursor.toArray();
-            res.send(faq);
-        })
 
         //single data read with id and view
         app.get('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await collectionServer.findOne(query)
+            res.send(result)
+        })
+        //single 3 data read with id and view
+        app.get('/service/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await collectionServer.findOne(query)
@@ -100,7 +150,37 @@ async function run() {
             const result = await collectionServer.deleteOne(query)
             res.send(result)
         })
+        /*....................
+        
+         My services data CRUD end
+                
+        ..........................*/
+        /*....................
+        
+         Blog and FAQ data api
+                
+        ..........................*/
 
+        // blog data read
+        app.get('/blog', async (req, res) => {
+            const query = {}
+            const cursor = blogCollection.find(query)
+            const blog = await cursor.toArray();
+            res.send(blog);
+        })
+        // faq data read
+        app.get('/faq', async (req, res) => {
+            const query = {}
+            const cursor = faqCollection.find(query)
+            const faq = await cursor.toArray();
+            res.send(faq);
+        })
+
+        /*....................
+                
+         Blog and FAQ data api end
+                        
+        ..........................*/
     }
     finally {
         // console.log('final')
