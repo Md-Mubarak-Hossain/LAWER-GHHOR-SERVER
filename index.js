@@ -96,19 +96,23 @@ async function run() {
 
         // myreviews  data update
 
-        app.put('/myreviews/:id', async (req, res) => {
+        app.patch('/myreviews/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
-            const myreview = req.body;
-            const option = { upsert: true }
+            const user = req.body;
             const updatemyreview = {
                 $set: {
-                    serviceName: myreview.serviceName,
-                    servicePrice: myreview.servicePrice,
-                    img: myreview.img
+                    reviewId: user.reviewId,
+                    serviceName: user.serviceName,
+                    servicePrice: user.servicePrice,
+                    reviewer: user.reviewer,
+                    email: user.email,
+                    phone: user.phone,
+                    message: user.message,
+                    img: user.img
                 }
             }
-            const result = await myreviewsCollection.updateOne(filter, updateUser, option)
+            const result = await myreviewsCollection.updateOne(filter, updatemyreview)
             res.send(result)
         })
 
@@ -160,30 +164,30 @@ async function run() {
             res.send(result)
         })
 
-        // data update and view
-        app.put('/services/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) }
-            const user = req.body;
-            const option = { upsert: true }
-            const updateUser = {
-                $set: {
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone
-                }
-            }
-            const result = await collectionServer.updateOne(filter, updateUser, option)
-            res.send(result)
-        })
+        // // data update and view
+        // app.put('/services/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: ObjectId(id) }
+        //     const user = req.body;
+        //     const option = { upsert: true }
+        //     const updateUser = {
+        //         $set: {
+        //             name: user.name,
+        //             email: user.email,
+        //             phone: user.phone
+        //         }
+        //     }
+        //     const result = await collectionServer.updateOne(filter, updateUser, option)
+        //     res.send(result)
+        // })
 
-        // data delete 
-        app.delete('/services/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) }
-            const result = await collectionServer.deleteOne(query)
-            res.send(result)
-        })
+        // // data delete 
+        // app.delete('/services/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) }
+        //     const result = await collectionServer.deleteOne(query)
+        //     res.send(result)
+        // })
         /*....................
          
          My services data CRUD end
