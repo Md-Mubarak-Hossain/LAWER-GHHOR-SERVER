@@ -102,14 +102,9 @@ async function run() {
             const user = req.body;
             const updatemyreview = {
                 $set: {
-                    reviewId: user.reviewId,
-                    serviceName: user.serviceName,
-                    servicePrice: user.servicePrice,
                     reviewer: user.reviewer,
-                    email: user.email,
                     phone: user.phone,
                     message: user.message,
-                    img: user.img
                 }
             }
             const result = await myreviewsCollection.updateOne(filter, updatemyreview)
