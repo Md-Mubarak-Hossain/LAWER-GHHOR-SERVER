@@ -18,6 +18,23 @@ console.log(uri);
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+/*............................
+verify user by token api
+.............................*/
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' })
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 async function run() {
     try {
@@ -39,33 +56,41 @@ async function run() {
             res.send({ token })
         })
         /*...........................
- 
+         
         My reviewer data CRUD start
-        
+         
         ............................*/
 
         //myreviewers data create and send
 
         app.post('/myreviews', async (req, res) => {
-            const myreviewer = req.body;
-            const result = await myreviewsCollection.insertOne(myreviewer);
+            const myreview = req.body;
+            const result = await myreviewsCollection.insertOne(myreview);
             res.send(result);
             console.log(result);
         })
 
         // myreviews all data view by email
 
-        app.get('/myreviews', async (req, res) => {
-            const query = {}
+        app.get('/myreviews', verifyJWT, async (req, res) => {
+            const decoded = req.decoded;
+            if (decoded.email !== req.query.email) {
+                return res.status(403).send({ message: 'unauthorized access' })
+            }
+            let query = {}
+            if (req.query.email) {
+                query = { email: req.query.email }
+            }
             const cursor = myreviewsCollection.find(query)
             const myreviews = await cursor.toArray();
             res.send(myreviews);
         });
-        // myreviews single  data view by id ......
+
+        // // myreviews single  data view by id ......
         app.get('/myreviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
-            const myreviews = await collectionServer.findOne(query)
+            const myreviews = await myreviewsCollection.findOne(query)
             res.send(myreviews);
         });
 
@@ -95,15 +120,15 @@ async function run() {
             res.send(result)
         })
         /*...........................
-       
+         
                My reviewer data CRUD end
                
         ............................*/
 
         /*....................
-
-        My services data CRUD start
         
+        My services data CRUD start
+         
         ..........................*/
         //services all data read and view
         app.get('/services', async (req, res) => {
@@ -160,12 +185,12 @@ async function run() {
             res.send(result)
         })
         /*....................
-        
+         
          My services data CRUD end
                 
         ..........................*/
         /*....................
-        
+         
          Blog and FAQ data api
                 
         ..........................*/
