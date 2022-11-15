@@ -45,6 +45,8 @@ async function run() {
         const faqCollection = database.collection('faq');
         const blogCollection = database.collection('blog');
         const myreviewsCollection = database.collection('myreviews');
+        const mchatCollection = database.collection('mechatsCollection');
+        const mchatFileCollection = database.collection('fileCollection');
 
         /*..............................
         JWT api token
@@ -70,6 +72,7 @@ async function run() {
             console.log(result);
         })
 
+
         // myreviews all data view by email
 
         app.get('/myreviews', verifyJWT, async (req, res) => {
@@ -85,6 +88,22 @@ async function run() {
             const myreviews = await cursor.toArray();
             res.send(myreviews);
         });
+
+        /*....file....*/
+        app.get('/files', async (req, res) => {
+            let query = {}
+            const cursor = mchatFileCollection.find(query)
+            const file = await cursor.toArray();
+            res.send(file);
+        });
+
+        app.post('/files', async (req, res) => {
+            const file = req.body;
+            const result = await mchatFileCollection.insertOne(file);
+            res.send(result);
+            console.log(result);
+        })
+        /*...............*/
 
         // // myreviews single  data view by id ......
         app.get('/myreviews/:id', async (req, res) => {
@@ -214,6 +233,28 @@ async function run() {
          Blog and FAQ data api end
                         
         ..........................*/
+        app.get('/mchats', async (req, res) => {
+            const query = {}
+            const cursor = mchatCollection.find(query)
+            const mchats = await cursor.toArray()
+            res.send(mchats);
+        })
+
+        app.post('/mchats', async (req, res) => {
+            const user = req.body;
+            const result = await mchatCollection.insertOne(user)
+            res.send(result);
+            console.log(result)
+        })
+
+        /*....optional test*/
+        app.put('/mchats', async (req, res) => {
+            const user = req.body;
+            const result = await mchatCollection.updateMany(user)
+            res.send(result);
+
+
+        })
     }
     finally {
         // console.log('final')
